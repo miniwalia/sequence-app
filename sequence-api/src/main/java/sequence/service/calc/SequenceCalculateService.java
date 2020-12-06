@@ -27,8 +27,6 @@ public class SequenceCalculateService {
     private SequenceRepository repository;
     @Autowired
     private SequenceRestRepository resultRepository;
-    @Value("${calc.wait.task}")
-    private static int waitSeconds;
 
     private static final Logger LOG = LoggerFactory.getLogger(SequenceCalculateService.class);
 
@@ -45,9 +43,6 @@ public class SequenceCalculateService {
             final List<SequenceRequest> requests,
             final Task task) {
         Instant start = Instant.now();
-        if (waitSeconds > 0) {
-            this.sleep(waitSeconds);
-        }
         TaskStatus status = null;
         Set<Result> results = new HashSet<Result>();
         for (SequenceRequest request : requests) {
@@ -119,13 +114,5 @@ public class SequenceCalculateService {
             diff = diff - step;
         }
         return seqs;
-    }
-
-    private void sleep(int seconds) {
-        try {
-            Thread.sleep(seconds * 1000);
-        } catch (InterruptedException e) {
-            LOG.info("Thread:{} interrupted ", Thread.currentThread().getName());
-        }
     }
 }
