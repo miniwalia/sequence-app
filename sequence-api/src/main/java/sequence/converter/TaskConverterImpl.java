@@ -35,17 +35,15 @@ public class TaskConverterImpl implements TaskConverter {
     public TaskDto entityToResultSequence(Task task) {
         TaskDto taskDto = new TaskDto();
         if (task != null && !CollectionUtils.isEmpty(task.getResults())) {
-            List<List<Integer>> sequences = task.getResults().stream()
+            List<String> sequences = task.getResults().stream()
                     .map(result -> result.getSequence()).collect(Collectors.toList());
             if (CollectionUtils.isEmpty(sequences)) {
                 return taskDto;
             }
             if (sequences.size() == 1) {
-                taskDto.setResult(StringUtils.collectionToDelimitedString(sequences.get(0), ","));
+                taskDto.setResult(sequences.get(0));
             } else {
-                List<String> results = sequences.stream().map(seq -> StringUtils.collectionToDelimitedString(seq, ","))
-                .collect(Collectors.toList());
-                taskDto.setResults(results);
+                taskDto.setResults(sequences);
             }
         }
         return taskDto;

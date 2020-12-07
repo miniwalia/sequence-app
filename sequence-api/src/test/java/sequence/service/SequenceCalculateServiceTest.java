@@ -10,7 +10,7 @@ import sequence.model.SequenceRequest;
 import sequence.model.Task;
 import sequence.model.TaskStatus;
 import sequence.repository.SequenceRepository;
-import sequence.repository.SequenceRestRepository;
+import sequence.repository.SequenceResultRepository;
 import sequence.service.calc.SequenceCalculateService;
 
 
@@ -18,6 +18,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.anyObject;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -26,7 +27,7 @@ public class SequenceCalculateServiceTest {
     @Mock
     private SequenceRepository repository;
     @Mock
-    private SequenceRestRepository resultRepository;
+    private SequenceResultRepository resultRepository;
     @InjectMocks
     @Spy
     private SequenceCalculateService seqCalcService;
@@ -39,9 +40,14 @@ public class SequenceCalculateServiceTest {
 
     @Test
     public void testCalculate_shouldGenerateNewSequences() {
-        List<List<Integer>> expectedBulkSeq = new ArrayList(){{
+        /*List<String> expectedBulkSeq = new ArrayList(){{
             add(Arrays.asList("20,15,10,5,0"));
             add(Arrays.asList("10, 6, 2"));
+        }};*/
+
+        List<String> expectedBulkSeq = new ArrayList(){{
+            add("20,15,10,5,0");
+            add("10, 6, 2");
         }};
 
         Mockito.when(seqCalcService.getExistingResult(anyObject())).thenReturn(null);
@@ -49,8 +55,8 @@ public class SequenceCalculateServiceTest {
 
         Set<Result> results = task.getResults();
         assertEquals(2, results.size());
-        List<List<Integer>> seqs = results.stream().map(result -> result.getSequence()).collect(Collectors.toList());
-        for (List<Integer> sequence : expectedBulkSeq) {
+        List<String> seqs = results.stream().map(result -> result.getSequence()).collect(Collectors.toList());
+        for (String sequence : expectedBulkSeq) {
             seqs.contains(sequence);
         }
     }
@@ -76,7 +82,7 @@ public class SequenceCalculateServiceTest {
 
     protected void verifyErrorTaskStatus() {
         Set<Result> results = task.getResults();
-        assertEquals(0, results.size());
+        assertNull(task.getResults());
         assertEquals(TaskStatus.Error, task.getStatus());
     }
 }

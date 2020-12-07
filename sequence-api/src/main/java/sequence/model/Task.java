@@ -26,7 +26,7 @@ public class Task {
     private TaskStatus status;
     @ManyToMany
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-    @Cascade(org.hibernate.annotations.CascadeType.MERGE)
+    @Cascade(org.hibernate.annotations.CascadeType.REMOVE)
     @JsonProperty(value="results")
     private Set<Result> results;
 

@@ -20,10 +20,10 @@ public class Result {
     private UUID uuid;
     @Embedded
     private SequenceRequest request;
-    @ElementCollection(fetch = FetchType.LAZY)
+    @Lob
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @Cascade(org.hibernate.annotations.CascadeType.ALL)
-    private List<Integer> sequence = new ArrayList<>();
+    private String sequence ;
 
     public Result() {
     }
@@ -40,11 +40,11 @@ public class Result {
         uuid = uuid;
     }
 
-    public List<Integer> getSequence() {
+    public String getSequence() {
         return sequence;
     }
 
-    public void setSequence(List<Integer> sequence) {
+    public void setSequence(String sequence) {
         this.sequence = sequence;
     }
 

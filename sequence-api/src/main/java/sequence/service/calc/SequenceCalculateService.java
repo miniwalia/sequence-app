@@ -6,12 +6,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import sequence.model.Result;
 import sequence.model.SequenceRequest;
 import sequence.model.Task;
 import sequence.model.TaskStatus;
 import sequence.repository.SequenceRepository;
-import sequence.repository.SequenceRestRepository;
+import sequence.repository.SequenceResultRepository;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -21,13 +22,16 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
 
+import static org.aspectj.bridge.MessageUtil.fail;
+
 @Service
 public class SequenceCalculateService {
     @Autowired
     private SequenceRepository repository;
     @Autowired
-    private SequenceRestRepository resultRepository;
-
+    private SequenceResultRepository resultRepository;
+    @Value("${app.sleep.seconds}")
+    private int waitSeconds;
     private static final Logger LOG = LoggerFactory.getLogger(SequenceCalculateService.class);
 
     /** Calculate the list of requests.
@@ -43,22 +47,39 @@ public class SequenceCalculateService {
             final List<SequenceRequest> requests,
             final Task task) {
         Instant start = Instant.now();
+        if (waitSeconds > 0) {
+            this.sleep();
+        }
         TaskStatus status = null;
         Set<Result> results = new HashSet<Result>();
         for (SequenceRequest request : requests) {
             status = this.getStatus(request);
             if (status.equals(TaskStatus.Error)) {
+                task.setStatus(status);
                 results.clear();
                 break;
             }
             results.add(this.getResult(request));
         }
-        task.setResult(results);
-        task.setStatus(status);
+        if (status.equals(TaskStatus.Success)) {
+            task.setStatus(status);
+            this.saveResults(results, task);
+        }
         this.repository.save(task);
         LOG.info("calculate method took:{} seconds",
                 Duration.between(start, Instant.now()).getSeconds());
         return null;
+    }
+
+    protected void saveResults(Set<Result> results, Task task) {
+        try {
+            for (Result result : results) {
+                this.resultRepository.save(result);
+            }
+            task.setResult(results);
+        } catch (Exception e) {
+            task.setStatus(TaskStatus.Error);
+        }
     }
 
     /** Return task status as error if
@@ -87,7 +108,8 @@ public class SequenceCalculateService {
         Result result = this.getExistingResult(request);
         if (result == null) {
             result = new Result(request);
-            result.getSequence().addAll(this.generateSeq(request.getGoal(), request.getStep()));
+            List<Integer> sequence =  this.generateSeq(request.getGoal(), request.getStep());
+            result.setSequence(StringUtils.collectionToDelimitedString(sequence, ","));
         }
         return result;
     }
@@ -114,5 +136,14 @@ public class SequenceCalculateService {
             diff = diff - step;
         }
         return seqs;
+    }
+
+    private void sleep() {
+        try {
+            Thread.sleep(waitSeconds* 1000);
+        } catch (InterruptedException e) {
+            fail("Erro while executing thread");
+
+        }
     }
 }

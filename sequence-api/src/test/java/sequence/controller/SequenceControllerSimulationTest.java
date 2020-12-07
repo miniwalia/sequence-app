@@ -29,7 +29,7 @@ public class SequenceControllerSimulationTest extends AbstractSeqTest {
 
     private static final List<SequenceRequest> BULK_SEQUENCE_REQUEST = new ArrayList<SequenceRequest>(){
         {
-            add(new SequenceRequest(2000000, 5));
+            add(new SequenceRequest(10000000, 5));
             add(new SequenceRequest(10, 4));
         }
     };
