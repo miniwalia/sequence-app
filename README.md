@@ -14,6 +14,7 @@ This project contains a spring boot application that generates a sequence of num
 
 ## Tests
 ### SequenceControllerSimulationTest 
+ - Please change app.sleep.seconds to some value e.g 20.It will introduce delay between creation and execution os task
  - Calls "/api/generate" endpoint to create task and initaite async call to calculate sequence.
  - Wait for Async task to complete(Given input takes more than 20 seconds).
  - Calls "/tasks/{id}?action=get_numlist" to verify result is generated.
